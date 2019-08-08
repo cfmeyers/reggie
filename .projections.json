@@ -1,0 +1,10 @@
+    {
+      "reggie/*.py": {
+        "alternate": "tests/test_{}.py",
+        "type": "source"
+      },
+      "tests/test_{}.py": {
+        "alternate": "reggie/*.py",
+        "type": "test"
+      }
+    }
