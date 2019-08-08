@@ -25,8 +25,8 @@ class ConsolidatedFileMatch(NamedTuple):
 
 def collect_created_tables(text_stream: TextIO) -> List[Table]:
     text = text_stream.read()
-    table_pattern = r'table(?! if)\s+(\w+\.?\w*)'
-    view_pattern = r'view(?! if)\s+(\w+\.?\w*)'
+    table_pattern = r'(?:create|replace)\s+table(?! if)\s+(\w+\.?\w*)'
+    view_pattern = r'(?:create|replace)\s+view(?! if)\s+(\w+\.?\w*)'
     tables = re.findall(table_pattern, text, re.IGNORECASE | re.MULTILINE)
     views = re.findall(view_pattern, text, re.IGNORECASE | re.MULTILINE)
     return [Table(name=t, obj_type='table') for t in tables] + [
@@ -49,7 +49,7 @@ def get_matches_in_script(script_path: str, regex: Pattern) -> List[FileMatch]:
 
 def get_matches_in_directory(tables: List[Table], dir_path: str) -> List[FileMatch]:
     matches = []
-    regex = re.compile('|'.join(t.name for t in tables))
+    regex = re.compile(r'|'.join(f'\\b{t.name}\\b' for t in tables))
     for file_path in Path(dir_path).glob('**/*.sql'):
         script_matches = get_matches_in_script(str(file_path), regex)
         matches.extend(script_matches)

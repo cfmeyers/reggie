@@ -72,7 +72,8 @@ def multiple_table_str() -> StringIO:
         """\
     CREATE Table fuzzy.bunnies AS SELECT * FROM raw.bunnies;
 
-    CREATE VIEW kittens AS SELECT * FROM raw.bunnies;
+    CREATE OR Replace 
+    VIEW kittens AS SELECT * FROM raw.bunnies;
 """
     )
 
@@ -142,7 +143,10 @@ class TestGetMatchesInScript:
 class TestGetMatchesInDirectory:
     def test_it(self):
         path = 'tests/fixtures/small_animals'
-        tables = ['fuzzy.bunnies', 'kittens']
+        tables = [
+            Table(name='fuzzy.bunnies', obj_type='table'),
+            Table(name='kittens', obj_type='table'),
+        ]
         expected = [
             FileMatch(
                 table='kittens',
