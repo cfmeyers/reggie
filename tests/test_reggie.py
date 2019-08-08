@@ -3,10 +3,17 @@
 
 """Tests for `reggie` package."""
 from io import StringIO
+import re
 
 import pytest
 
-from reggie.reggie import collect_created_tables
+from reggie.reggie import (
+    collect_created_tables,
+    get_table_names_from_script,
+    get_matches_in_directory,
+    FileMatch,
+    get_matches_in_script,
+)
 
 
 @pytest.fixture
@@ -91,3 +98,48 @@ class TestCollectCreatedTables:
         assert ['fuzzy.bunnies', 'kittens'] == collect_created_tables(
             multiple_table_str
         )
+
+
+class TestGetTableNamesFromScript:
+    def test_it_returns_tables_from_script(self):
+        path = 'tests/fixtures/simple-script.sql'
+        assert ['fuzzy.bunnies', 'kittens'] == get_table_names_from_script(path)
+
+    def test_it_returns_no_tables_from_empty_script(self):
+        path = 'tests/fixtures/empty.sql'
+        assert [] == get_table_names_from_script(path)
+
+
+class TestGetMatchesInScript:
+    def test_it(self):
+        file_name = 'tests/fixtures/small_animals/bunnies/american/bugs.sql'
+
+        regex = re.compile(f'kittens')
+        expected = [
+            FileMatch(
+                table='kittens',
+                path='tests/fixtures/small_animals/bunnies/american/bugs.sql',
+            )
+        ]
+        assert expected == get_matches_in_script(file_name, regex)
+
+
+class TestGetMatchesInDirectory:
+    def test_it(self):
+        path = 'tests/fixtures/small_animals'
+        tables = ['fuzzy.bunnies', 'kittens']
+        expected = [
+            FileMatch(
+                table='kittens',
+                path='tests/fixtures/small_animals/bunnies/american/bugs.sql',
+            ),
+            FileMatch(
+                table='fuzzy.bunnies',
+                path='tests/fixtures/small_animals/bunnies/american/bugs.sql',
+            ),
+            FileMatch(
+                table='kittens',
+                path='tests/fixtures/small_animals/teacup_pigs/porky.sql',
+            ),
+        ]
+        assert set(expected) == set(get_matches_in_directory(tables, path))

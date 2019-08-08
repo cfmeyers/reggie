@@ -3,13 +3,15 @@
 """Console script for reggie."""
 import sys
 import click
+from reggie.reggie import sniff_out_dependencies
 
 
 @click.command()
-def main(args=None):
+@click.argument('target_script_path', type=str)
+@click.argument('dir_path', type=str)
+def main(target_script_path, dir_path):
     """Console script for reggie."""
-    click.echo("Replace this message by putting your code into " "reggie.cli.main")
-    click.echo("See click documentation at http://click.pocoo.org/")
+    sniff_out_dependencies(target_script_path, dir_path)
     return 0
 
 

@@ -11,11 +11,11 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = ['Click>=6.0', ]
+requirements = ['Click>=6.0']
 
-setup_requirements = ['pytest-runner', ]
+setup_requirements = ['pytest-runner']
 
-test_requirements = ['pytest', ]
+test_requirements = ['pytest']
 
 setup(
     author="Collin Meyers",
@@ -30,11 +30,7 @@ setup(
         'Programming Language :: Python :: 3.7',
     ],
     description="Sniff out first order dependencies in a messy sql graph",
-    entry_points={
-        'console_scripts': [
-            'reggie=reggie.cli:main',
-        ],
-    },
+    entry_points={'console_scripts': ['reggie=reggie.cli:main']},
     install_requires=requirements,
     license="MIT license",
     long_description=readme + '\n\n' + history,
