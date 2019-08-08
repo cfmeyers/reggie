@@ -18,7 +18,7 @@ class ConsolidatedFileMatch(NamedTuple):
 
 
 def collect_created_tables(text_stream: TextIO) -> List[str]:
-    pattern = r'(?:table|view)\s+(\w+\.?\w*)'
+    pattern = r'(?:table|view)(?! if)\s+(\w+\.?\w*)'
     text = text_stream.read()
     return re.findall(pattern, text, re.IGNORECASE | re.MULTILINE)
 
@@ -49,7 +49,7 @@ def get_consolidated_matches(matches: List[FileMatch]) -> List[ConsolidatedFileM
     matches.sort(key=lambda x: x.path)
     consolidated = []
     for k, g in groupby(matches, lambda x: x.path):
-        tables = [m.table for m in g]
+        tables = list(set([m.table for m in g]))
         cfm = ConsolidatedFileMatch(path=k, tables=tables)
         consolidated.append(cfm)
     return consolidated
@@ -58,9 +58,8 @@ def get_consolidated_matches(matches: List[FileMatch]) -> List[ConsolidatedFileM
 def render(tables: List[str], matches: List[FileMatch]):
     consolidated_matches = get_consolidated_matches(matches)
     print('Table/View DDLs found:')
-    for table in tables:
+    for table in set(tables):
         print(f'\t{table}')
-    print('===')
     print()
     for match in consolidated_matches:
         print(match.path)
