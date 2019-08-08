@@ -7,6 +7,11 @@ import re
 from pathlib import Path
 
 
+class Table(NamedTuple):
+    name: str
+    obj_type: str
+
+
 class FileMatch(NamedTuple):
     table: str
     path: str
@@ -17,13 +22,18 @@ class ConsolidatedFileMatch(NamedTuple):
     path: str
 
 
-def collect_created_tables(text_stream: TextIO) -> List[str]:
-    pattern = r'(?:table|view)(?! if)\s+(\w+\.?\w*)'
+def collect_created_tables(text_stream: TextIO) -> List[Table]:
     text = text_stream.read()
-    return re.findall(pattern, text, re.IGNORECASE | re.MULTILINE)
+    table_pattern = r'table(?! if)\s+(\w+\.?\w*)'
+    view_pattern = r'view(?! if)\s+(\w+\.?\w*)'
+    tables = re.findall(table_pattern, text, re.IGNORECASE | re.MULTILINE)
+    views = re.findall(view_pattern, text, re.IGNORECASE | re.MULTILINE)
+    return [Table(name=t, obj_type='table') for t in tables] + [
+        Table(name=v, obj_type='view') for v in views
+    ]
 
 
-def get_table_names_from_script(script_path: str) -> List[str]:
+def get_table_names_from_script(script_path: str) -> List[Table]:
     with open(script_path, 'r') as f:
         return collect_created_tables(f)
 
@@ -36,9 +46,9 @@ def get_matches_in_script(script_path: str, regex: Pattern) -> List[FileMatch]:
     return matches
 
 
-def get_matches_in_directory(tables: List[str], dir_path: str) -> List[FileMatch]:
+def get_matches_in_directory(tables: List[Table], dir_path: str) -> List[FileMatch]:
     matches = []
-    regex = re.compile('|'.join(tables))
+    regex = re.compile('|'.join(t.name for t in tables))
     for file_path in Path(dir_path).glob('**/*.sql'):
         script_matches = get_matches_in_script(str(file_path), regex)
         matches.extend(script_matches)
@@ -55,11 +65,11 @@ def get_consolidated_matches(matches: List[FileMatch]) -> List[ConsolidatedFileM
     return consolidated
 
 
-def render(tables: List[str], matches: List[FileMatch]):
+def render(tables: List[Table], matches: List[FileMatch]):
     consolidated_matches = get_consolidated_matches(matches)
     print('Table/View DDLs found:')
     for table in set(tables):
-        print(f'\t{table}')
+        print(f'\t{table.name}')
     print()
     for match in consolidated_matches:
         print(match.path)

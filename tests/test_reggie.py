@@ -13,6 +13,7 @@ from reggie.reggie import (
     get_matches_in_directory,
     FileMatch,
     get_matches_in_script,
+    Table,
 )
 
 
@@ -78,32 +79,46 @@ def multiple_table_str() -> StringIO:
 
 class TestCollectCreatedTables:
     def test_it_parses_simple_table_statements(self, single_table_str):
-        assert ['kittens'] == collect_created_tables(single_table_str)
+        assert [Table(name='kittens', obj_type='table')] == collect_created_tables(
+            single_table_str
+        )
 
     def test_it_parses_simple_table_statements_witout_case_sensitivity(
         self, single_table_str_caps
     ):
-        assert ['kittens'] == collect_created_tables(single_table_str_caps)
+        assert [Table(name='kittens', obj_type='table')] == collect_created_tables(
+            single_table_str_caps
+        )
 
     def test_it_parses_simple_view_statements(self, single_view_str_caps):
-        assert ['kittens'] == collect_created_tables(single_view_str_caps)
+        assert [Table(name='kittens', obj_type='view')] == collect_created_tables(
+            single_view_str_caps
+        )
 
     def test_it_parses_view_split_across_lines(self, view_str_split_across_lines):
-        assert ['kittens'] == collect_created_tables(view_str_split_across_lines)
+        assert [Table(name='kittens', obj_type='view')] == collect_created_tables(
+            view_str_split_across_lines
+        )
 
     def test_it_parses_schema_and_table_names(self, view_schema_and_table):
-        assert ['fuzzy.bunnies'] == collect_created_tables(view_schema_and_table)
+        assert [Table(name='fuzzy.bunnies', obj_type='view')] == collect_created_tables(
+            view_schema_and_table
+        )
 
     def test_it_parses_multiple_table_statements(self, multiple_table_str):
-        assert ['fuzzy.bunnies', 'kittens'] == collect_created_tables(
-            multiple_table_str
-        )
+        assert [
+            Table(name='fuzzy.bunnies', obj_type='table'),
+            Table(name='kittens', obj_type='view'),
+        ] == collect_created_tables(multiple_table_str)
 
 
 class TestGetTableNamesFromScript:
     def test_it_returns_tables_from_script(self):
         path = 'tests/fixtures/simple-script.sql'
-        assert ['fuzzy.bunnies', 'kittens'] == get_table_names_from_script(path)
+        assert [
+            Table(name='fuzzy.bunnies', obj_type='table'),
+            Table(name='kittens', obj_type='view'),
+        ] == get_table_names_from_script(path)
 
     def test_it_returns_no_tables_from_empty_script(self):
         path = 'tests/fixtures/empty.sql'
