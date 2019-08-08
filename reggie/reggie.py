@@ -3,6 +3,7 @@
 """Main module."""
 from typing import List, TextIO, NamedTuple, Pattern
 from itertools import groupby
+from datetime import datetime
 import re
 from pathlib import Path
 
@@ -65,6 +66,22 @@ def get_consolidated_matches(matches: List[FileMatch]) -> List[ConsolidatedFileM
     return consolidated
 
 
+def render_archive_delete_statements(tables):
+    for k, g in groupby(tables, lambda x: x.obj_type):
+        if k == 'table':
+            for table in g:
+                today = datetime.today().strftime('%Y%m%d')
+                msg = f"""\
+CREATE OR REPLACE TABLE ARCHIVE.{table.name}_{today} AS SELECT * FROM {table.name};
+DROP TABLE {table.name};
+                """
+                print(msg)
+        if k == 'view':
+            for view in g:
+                msg = f"DROP VIEW {view.name};"
+                print(msg)
+
+
 def render(tables: List[Table], matches: List[FileMatch]):
     consolidated_matches = get_consolidated_matches(matches)
     print('Table/View DDLs found:')
@@ -76,6 +93,7 @@ def render(tables: List[Table], matches: List[FileMatch]):
         print('\t' + '\n\t'.join(match.tables))
         print('---')
         print()
+    render_archive_delete_statements(tables)
 
 
 def sniff_out_dependencies(target_script_path: str, dir_path: str):
