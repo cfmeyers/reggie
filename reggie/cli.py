@@ -8,7 +8,7 @@ from reggie.reggie import sniff_out_dependencies
 
 @click.command()
 @click.argument('target_script_path', type=str)
-@click.argument('dir_path', type=str)
+@click.argument('dir_path', type=str, default='.')
 def main(target_script_path, dir_path):
     """Console script for reggie."""
     sniff_out_dependencies(target_script_path, dir_path)
