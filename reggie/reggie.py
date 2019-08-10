@@ -23,6 +23,7 @@ class ConsolidatedFileMatch(NamedTuple):
     path: str
 
 
+# TODO fix /* create table to speed up Tableau*/
 def collect_created_tables(text_stream: TextIO) -> List[Table]:
     text = text_stream.read()
     table_pattern = r'(?:create|replace)\s+table(?! if)\s+(\w+\.?\w*)'
