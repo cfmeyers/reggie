@@ -70,7 +70,7 @@ def view_schema_and_table() -> StringIO:
 def multiple_table_str() -> StringIO:
     return StringIO(
         """\
-    CREATE Table fuzzy.bunnies AS SELECT * FROM raw.bunnies;
+    ALTER Table fuzzy.bunnies rename to
 
     CREATE OR Replace 
     VIEW kittens AS SELECT * FROM raw.bunnies;
